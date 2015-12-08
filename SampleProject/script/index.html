@@ -1,0 +1,17 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Muddler</title>
+</head>
+
+<body>
+<h1>Muddler ver.2015/12/08</h1>
+</body>
+
+<% list.records.each{line -> %>
+<h4>${line.title}</h4> ${line.url ?: ""}<br >
+<%}%>
+
+
+
+</html>

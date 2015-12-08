@@ -16,36 +16,53 @@ import static spark.Spark.port;
 
 public class Muddler {
 
-	static String ROOT_PATH;
-	public static Map<String, EntityManagerFactory> entityManagerFactoryMap = new HashMap<String, EntityManagerFactory>();
+    static String ROOT_PATH;
+    public static Map<String, EntityManagerFactory> entityManagerFactoryMap = new HashMap<String, EntityManagerFactory>();
 
-	public static void main(String... args) {
+    public static void main(String... args) {
 
-		String workspace = System.getProperty("workspace");
-		if(StringUtils.isEmpty(workspace)) {
-			workspace = new File(".").getAbsolutePath();
-		}
-		ROOT_PATH = workspace;
-		System.out.println("ROOT_PATH=" + ROOT_PATH);
-		
-		port(48088);
+        String workspace = System.getProperty("workspace");
+        if (StringUtils.isEmpty(workspace)) {
+            workspace = new File(".").getAbsolutePath();
+        }
+        ROOT_PATH = workspace;
+        System.out.println("ROOT_PATH=" + ROOT_PATH);
 
-		before((request, response) -> {
-			RequestManager.before(request);
-		});
+        String persistenceUnitNames = System
+                .getProperty("persistenceUnitNames");
 
-		after((request, response) -> {
-			RequestManager.after(request);
-		});
+        if (persistenceUnitNames == null) {
+            System.out.println("-DpersistenceUnitNames is nothing..");
+            System.out.println("set persistenceUnitName:default");
+            entityManagerFactoryMap.put("default", Persistence.createEntityManagerFactory("default"));
+        } else {
+            System.out.println("-DpersistenceUnitNames is "
+                    + persistenceUnitNames);
+            for (String name : persistenceUnitNames.split(",")) {
+                System.out.println("set persistenceUnitName:" + name);
+                entityManagerFactoryMap.put(name,
+                        Persistence.createEntityManagerFactory(name));
+            }
+        }
 
-		get("/hello", (req, res) -> "This is Muddler.");
+        port(48088);
 
-		GroovyLoader.init("config.groovy");
+        before((request, response) -> {
+            RequestManager.before(request);
+        });
 
-		get("/reloadConfig", (request, response) -> {
-			GroovyLoader.init("config.groovy");
-			return "ok";
-		});
+        after((request, response) -> {
+            RequestManager.after(request);
+        });
 
-	}
+        get("/hello", (req, res) -> "This is Muddler.");
+
+        GroovyLoader.init("config.groovy");
+
+        get("/reloadConfig", (request, response) -> {
+            GroovyLoader.init("config.groovy");
+            return "ok";
+        });
+
+    }
 }

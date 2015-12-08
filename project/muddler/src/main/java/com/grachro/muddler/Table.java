@@ -16,61 +16,55 @@ import org.eclipse.persistence.config.ResultType;
 import org.eclipse.persistence.internal.helper.DatabaseField;
 import org.eclipse.persistence.sessions.DatabaseRecord;
 
-import com.grachro.muddler.TsvLine.TsvLineNull;
+import com.grachro.muddler.TableRecord.TableEnptyRecord;
 
-public class Tsv {
-
-	public static Tsv start(RequestManager rm, Consumer<Tsv> closure) {
-		Tsv tsv = new Tsv(rm);
-		closure.accept(tsv);
-		return tsv;
-	}
+public class Table {
 
 	private RequestManager rm;
 	private EntityManager em;
 	private List<String> fieldNames = new ArrayList<String>();
-	private List<TsvLine> records = new ArrayList<TsvLine>();
+	private List<TableRecord> records = new ArrayList<TableRecord>();
 
-	private Map<String, TsvLine> indexMap;
+	private Map<String, TableRecord> indexMap;
 
-	public Tsv(RequestManager rm) {
+	public Table(RequestManager rm) {
 		this.rm = rm;
 	}
 
-	public Tsv database(String db) {
+	public Table database(String db) {
 		this.em = this.rm.getEntityManager(db);
 		return this;
 	}
 
-	public TsvLine loadFirst(String sql) {
+	public TableRecord loadFirst(String sql) {
 		this.load(() -> {
 			return sql;
 		});
 		return this.getFirst();
 	}
 
-	public TsvLine loadFirst(String sql, Consumer<TsvLine> first) {
-		TsvLine line = this.loadFirst(sql);
+	public TableRecord loadFirst(String sql, Consumer<TableRecord> first) {
+		TableRecord line = this.loadFirst(sql);
 		first.accept(line);
 		return line;
 	}
 
-	public TsvLine loadFirst(Supplier<String> sql, Consumer<TsvLine> first) {
-		TsvLine line = this.load(sql).getFirst();
+	public TableRecord loadFirst(Supplier<String> sql, Consumer<TableRecord> first) {
+		TableRecord line = this.load(sql).getFirst();
 		first.accept(line);
 		return line;
 	}
 
-	public Tsv load(String sql) {
+	public Table load(String sql) {
 		return this.load(() -> {
 			return sql;
 		});
 	}
 
-	public Tsv load(Supplier<String> sql) {
+	public Table load(Supplier<String> sql) {
 
 		this.fieldNames = new ArrayList<String>();
-		this.records = new ArrayList<TsvLine>();
+		this.records = new ArrayList<TableRecord>();
 
 		String sSql = sql.get();
 
@@ -90,7 +84,7 @@ public class Tsv {
 				first = false;
 			}
 
-			TsvLine m = new TsvLine();
+			TableRecord m = new TableRecord();
 			for (String fieldName : this.fieldNames) {
 				m.put(fieldName, record.get(fieldName));
 			}
@@ -105,50 +99,39 @@ public class Tsv {
 		return Collections.unmodifiableList(this.fieldNames);
 	}
 
-	public List<TsvLine> getRecords() {
+	public List<TableRecord> getRecords() {
 		return this.records;
 	}
 
-	public TsvLine getFirst() {
+	public TableRecord getFirst() {
 		return this.records.get(0);
 	}
 
-	public Tsv forEach(Consumer<TsvLine> executer) {
-		for (TsvLine line : this.records) {
+	public Table forEach(Consumer<TableRecord> executer) {
+		for (TableRecord line : this.records) {
 			executer.accept(line);
 		}
 		return this;
 	}
 
-	public Tsv addIndex(Function<TsvLine, String> key) {
+	public Table addIndex(Function<TableRecord, String> key) {
 
 		if (this.indexMap == null) {
-			this.indexMap = new HashMap<String, TsvLine>();
+			this.indexMap = new HashMap<String, TableRecord>();
 		}
-		for (TsvLine line : this.records) {
+		for (TableRecord line : this.records) {
 			String k = key.apply(line);
 			this.indexMap.put(k, line);
 		}
 		return this;
 	}
 
-	public TsvLine seek(String key) {
-		TsvLine line = this.indexMap.get(key);
+	public TableRecord seek(String key) {
+		TableRecord line = this.indexMap.get(key);
 		if (line == null) {
-			return new TsvLineNull();
+			return new TableEnptyRecord();
 		}
 		return line;
 	}
 
-	public void viewParam(String name) {
-		this.rm.setViewModel(name, this);
-	}
-
-	public void viewParam(String name, Object o) {
-		this.rm.setViewModel(name, o);
-	}
-
-	public Map<String, Object> getViewParam() {
-		return this.rm.getModels();
-	}
 }

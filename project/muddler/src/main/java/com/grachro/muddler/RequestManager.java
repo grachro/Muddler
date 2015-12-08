@@ -65,10 +65,18 @@ public class RequestManager {
 		Map<String, Object> map = this.request.attribute("viewModel");
 		map.put(name, o);
 	}
+	
 
-	public Tsv getTsvModel(String name) {
+	public void setDefault(String name,String value) {
 		Map<String, Object> map = this.request.attribute("viewModel");
-		return (Tsv) map.get(name);
+		if (map.get(name) == null) {
+			map.put(name, value);
+		}
+	}
+
+	public Table getTsvModel(String name) {
+		Map<String, Object> map = this.request.attribute("viewModel");
+		return (Table) map.get(name);
 	}
 
 	public Map<?, ?> getMapModel(String name) {
