@@ -1,6 +1,7 @@
 package com.grachro.muddler;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -93,6 +94,10 @@ public class Table {
 		}
 
 		return this;
+	}
+
+	public void setFieldNames(Collection<String> fieldNames) {
+		this.fieldNames = new ArrayList<String>(fieldNames);
 	}
 
 	public List<String> getFieldNames() {

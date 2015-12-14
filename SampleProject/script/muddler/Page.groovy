@@ -108,4 +108,27 @@ class Page {
 		def viewString = template.toString()
 		this.rm.setViewModel("viewString",viewString)
 	}
+	
+	public void toTsv(String filePath,Table table){
+		def f = new File(filePath)
+		f.withWriter {
+			table.fieldNames.eachWithIndex{fieldName,i->
+				if (i > 0) {
+					it << "\t"
+				}
+				it << "${fieldName}"
+			}
+			it << "\n"
+	
+			table.records.each{line->
+				table.fieldNames.eachWithIndex{fieldName,i->
+					if (i > 0) {
+						it << "\t"
+					}
+					it << "${line.get(fieldName)}"
+				}
+				it << "\n"
+			}
+		}
+	}
 }
