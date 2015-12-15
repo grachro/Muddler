@@ -11,6 +11,8 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
+import javax.persistence.Query;
 
 import org.eclipse.persistence.config.QueryHints;
 import org.eclipse.persistence.config.ResultType;
@@ -96,8 +98,9 @@ public class Table {
 		return this;
 	}
 
-	public void setFieldNames(Collection<String> fieldNames) {
+	public Table setFieldNames(Collection<String> fieldNames) {
 		this.fieldNames = new ArrayList<String>(fieldNames);
+		return this;
 	}
 
 	public List<String> getFieldNames() {
@@ -131,7 +134,18 @@ public class Table {
 		return this;
 	}
 
+	public void addIndex(TableRecord record, String key) {
+		if (this.indexMap == null) {
+			this.indexMap = new HashMap<String, TableRecord>();
+		}
+		this.indexMap.put(key, record);
+	}
+
 	public TableRecord seek(String key) {
+		if (this.indexMap == null) {
+			return new TableEnptyRecord();
+		}
+
 		TableRecord line = this.indexMap.get(key);
 		if (line == null) {
 			return new TableEnptyRecord();
@@ -139,4 +153,82 @@ public class Table {
 		return line;
 	}
 
+	public TableRecord seekOrNull(String key) {
+		if (this.indexMap == null) {
+			return null;
+		}
+		return this.indexMap.get(key);
+	}
+
+	public TableRecord createNewRecord() {
+		TableRecord line = new TableRecord();
+
+		for (String fieldName : this.fieldNames) {
+			line.put(fieldName, null);
+		}
+
+		this.records.add(line);
+
+		return line;
+	}
+
+	public int executeSqlWithTransaction(String sql) {
+
+		EntityTransaction tx = this.em.getTransaction();
+		tx.begin();
+		int result = executeSql(sql);
+		tx.commit();
+
+		return result;
+	}
+
+	public int executeSql(String sql) {
+		// System.out.println("Table.executeSql:" + sql);
+
+		Query query = this.em.createNativeQuery(sql);
+		int result = query.executeUpdate();
+
+		return result;
+	}
+
+	public String createTableSqlForSqliet3(String tableName) {
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("create table ").append(tableName).append(" (\n");
+		boolean first = true;
+		for (String fieldName : fieldNames) {
+			if (first) {
+				first = false;
+			} else {
+				sb.append(",\n");
+			}
+			sb.append(fieldName);
+		}
+		sb.append("\n)");
+
+		return sb.toString();
+	}
+
+	public void insertSqlsForSqliet3(String tableName, Consumer<String> executer) {
+		for (TableRecord line : this.records) {
+			String sql = line.insertSqlForSqliet3(tableName, this.fieldNames);
+			executer.accept(sql);
+		}
+
+	}
+
+	public void toSqlite3(String tableName) {
+		String dropSql = "drop table if exists " + tableName;
+		this.executeSqlWithTransaction(dropSql);
+
+		String crateSql = this.createTableSqlForSqliet3(tableName);
+		this.executeSqlWithTransaction(crateSql);
+
+		EntityTransaction tx = this.em.getTransaction();
+		tx.begin();
+		this.insertSqlsForSqliet3(tableName, (insertSql) -> {
+			this.executeSql(insertSql);
+		});
+		tx.commit();
+	}
 }

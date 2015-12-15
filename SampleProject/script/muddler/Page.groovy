@@ -61,7 +61,7 @@ class Page {
 
 	public Table loadTable(String sql) {
 		
-		println "Page#loadTable::START database=" + database + " sql=" + database
+		println "Page#loadTable::START database=" + database + " sql=" + sql
 
 		Table table = new Table(this.rm)
 		table.database(database)
@@ -109,16 +109,16 @@ class Page {
 		this.rm.setViewModel("viewString",viewString)
 	}
 	
-	public void toTsv(String filePath,Table table){
+	public String toTsv(String filePath,Table table){
 		def f = new File(filePath)
 		f.withWriter {
-			table.fieldNames.eachWithIndex{fieldName,i->
-				if (i > 0) {
-					it << "\t"
-				}
-				it << "${fieldName}"
-			}
-			it << "\n"
+			//table.fieldNames.eachWithIndex{fieldName,i->
+			//	if (i > 0) {
+			//		it << "\t"
+			//	}
+			//	it << "${fieldName}"
+			//}
+			//it << "\n"
 	
 			table.records.each{line->
 				table.fieldNames.eachWithIndex{fieldName,i->
@@ -130,5 +130,11 @@ class Page {
 				it << "\n"
 			}
 		}
+		
+		return f.getAbsolutePath()
+	}
+
+	public Table createEmptyTable() {
+		new Table(this.rm)
 	}
 }
