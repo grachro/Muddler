@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -172,6 +173,18 @@ public class Table {
 		return line;
 	}
 
+	public TableRecord createNewRecord(Collection<Object> values) {
+		TableRecord line = this.createNewRecord();
+
+		Iterator<Object> itrIterator = values.iterator();
+
+		for (String fieldName : this.fieldNames) {
+			line.put(fieldName, itrIterator.next());
+		}
+
+		return line;
+	}
+
 	public int executeSqlWithTransaction(String sql) {
 
 		EntityTransaction tx = this.em.getTransaction();
@@ -223,6 +236,27 @@ public class Table {
 
 		String crateSql = this.createTableSqlForSqliet3(tableName);
 		this.executeSqlWithTransaction(crateSql);
+
+		EntityTransaction tx = this.em.getTransaction();
+		tx.begin();
+		this.insertSqlsForSqliet3(tableName, (insertSql) -> {
+			this.executeSql(insertSql);
+		});
+		tx.commit();
+	}
+
+	public void mergeSqlite3(String tableName) {
+
+		Table t = new Table(rm);
+		t.em = this.em;
+		String existSql = "select count(*) cnt from sqlite_master where type='table' and name='" + tableName + "'";
+		TableRecord r = t.loadFirst(existSql);
+		int cnt = (Integer) r.get("cnt");
+
+		if (cnt == 0) {
+			String crateSql = this.createTableSqlForSqliet3(tableName);
+			this.executeSqlWithTransaction(crateSql);
+		}
 
 		EntityTransaction tx = this.em.getTransaction();
 		tx.begin();
