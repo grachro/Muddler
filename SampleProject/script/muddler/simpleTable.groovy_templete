@@ -1,0 +1,14 @@
+<table>
+<tr>
+<% table.fieldNames.eachWithIndex{fieldName,i-> %>
+<th>${fieldName}</th>
+<%} %>
+</tr>
+<% table.getRecords().eachWithIndex{record,i-> %> 
+<tr>
+<% table.fieldNames.each{fieldName-> %>
+<td>${record.get(fieldName)}</td>
+<%} %>
+</tr>
+<%} %>
+</table>

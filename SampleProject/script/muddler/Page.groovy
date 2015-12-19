@@ -1,6 +1,7 @@
 package muddler
 
 import static spark.Spark.get;
+import static spark.Spark.post;
 
 import java.util.Map;
 import java.util.function.Consumer;
@@ -28,23 +29,31 @@ class Page {
 			def viewString = rm.getModel("viewString")
 			return viewString
 		}
+
+		post(url) { request, response ->
+			RequestManager rm = new RequestManager(request)
+			GroovyLoader.load(controlFile, rm)
+
+			def viewString = rm.getModel("viewString")
+			return viewString
+		}
 	}
 
 	
-	static start(rm, Closure cl) {
-
+	static start(RequestManager rm, Closure cl) {
 
 		if (cl == null) {
 			throw new IllegalArgumentException("Closure cl is null.");
 		}
 
-		println "Page#start::2"
-		
+		println "Page#start"
+		rm.setViewModel("md", new MuddlerViewUtils())
+
 		Page page = new Page(rm)
 		cl.delegate = page
 		cl.call(page)
 
-		println "Page#start::3"
+		println "Page#end"
 
 	}
 
@@ -99,16 +108,19 @@ class Page {
 		return this.rm.getModels();
 	}
 
-	public void setView(viewPath) {
-
+	public String editTemplete(viewPath, binding) {
 		def f = new File('script/' + viewPath)
 		def engine = new groovy.text.SimpleTemplateEngine()
-		def binding = this.rm.getModels()
 		def template = engine.createTemplate(f).make(binding)
-		def viewString = template.toString()
+		return template.toString()
+	}
+
+	public void setView(viewPath) {
+		def binding = this.rm.getModels()
+		def viewString = editTemplete(viewPath, binding)
 		this.rm.setViewModel("viewString",viewString)
 	}
-	
+
 	public String toTsv(String filePath,Table table){
 		def f = new File(filePath)
 		f.withWriter {

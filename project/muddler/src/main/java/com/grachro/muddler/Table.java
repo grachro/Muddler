@@ -28,6 +28,7 @@ public class Table {
 	private EntityManager em;
 	private List<String> fieldNames = new ArrayList<String>();
 	private List<TableRecord> records = new ArrayList<TableRecord>();
+	private FieldGroups fieldGroups;
 
 	private Map<String, TableRecord> indexMap;
 
@@ -66,6 +67,10 @@ public class Table {
 	}
 
 	public Table load(Supplier<String> sql) {
+
+		if (this.em == null) {
+			throw new NullPointerException("em is null");
+		}
 
 		this.fieldNames = new ArrayList<String>();
 		this.records = new ArrayList<TableRecord>();
@@ -247,6 +252,10 @@ public class Table {
 
 	public void mergeSqlite3(String tableName) {
 
+		if (this.em == null) {
+			throw new NullPointerException("em is null");
+		}
+
 		Table t = new Table(rm);
 		t.em = this.em;
 		String existSql = "select count(*) cnt from sqlite_master where type='table' and name='" + tableName + "'";
@@ -264,5 +273,18 @@ public class Table {
 			this.executeSql(insertSql);
 		});
 		tx.commit();
+	}
+
+	public FieldGroups getFieldGroups() {
+		return fieldGroups;
+	}
+
+	public void setFieldGroups(FieldGroups fieldGroups) {
+		this.fieldGroups = fieldGroups;
+	}
+
+	public Table doSomething(Consumer<Table> somethig) {
+		somethig.accept(this);
+		return this;
 	}
 }

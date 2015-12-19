@@ -1,0 +1,44 @@
+<table>
+
+<tr>
+<%
+  table.fieldGroups.each {group -> 
+    def groupCssClass = group.isOdd ? "td-col-odd" : "td-col-even"
+%>
+<th class="${groupCssClass}" colspan="${group.fields.size}">${group.name}</th>
+<% } %>
+<tr>
+
+<tr>
+<%
+  table.fieldGroups.each {group -> 
+    def groupCssClass = group.isOdd ? "td-col-odd" : "td-col-even"
+    group.fields.each {field ->
+    
+%>
+<th class="${groupCssClass}">${field.caption}</th>
+<%
+    }
+  }
+%>
+<tr>
+
+<% table.getRecords().each{record-> %> 
+<tr>
+<%
+  table.fieldGroups.each {group -> 
+    def groupCssClass = group.isOdd ? "td-col-odd" : "td-col-even"
+    group.fields.each {field ->
+      def cssClass = groupCssClass
+      cssClass += " "
+      cssClass += (field.fieldType == "number" ? "td-number" : "td-string")
+%>
+<td class="${cssClass}">${record.get(field.fieldName)}</td>
+<%
+    }
+  }
+%>
+</tr>
+<%}%>
+
+</table>
