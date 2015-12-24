@@ -4,10 +4,12 @@
 <th>${fieldName}</th>
 <%} %>
 </tr>
-<% table.getRecords().eachWithIndex{record,i-> %> 
+<% table.eachRecordWithIndex{record,i-> 
+	def evenOdd = i % 2 == 0 ? "even" : "odd"
+%> 
 <tr>
 <% table.fieldNames.each{fieldName-> %>
-<td>${record.get(fieldName)}</td>
+<td class="td_row_${evenOdd}">${record.get(fieldName)}</td>
 <%} %>
 </tr>
 <%} %>

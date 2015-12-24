@@ -2,16 +2,17 @@
 <head>
 <meta charset="UTF-8">
 <title>Muddler</title>
+<style>
+th {background-color:#c1c1ff}
+.td_row_even {background-color: ffffe5}
+.td_row_odd {background-color: f2ffe5}
+</style>
 </head>
 
 <body>
-<h1>Muddler ver.2015/12/08</h1>
+<h1>Muddler ver.2015/12/24</h1>
 </body>
 
-<% list.records.each{line -> %>
-<h4>${line.title}</h4> ${line.url ?: ""}<br >
-<%}%>
-
-
+${md.tableToHtml(pages)}
 
 </html>

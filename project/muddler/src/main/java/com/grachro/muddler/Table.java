@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -25,20 +26,30 @@ import com.grachro.muddler.TableRecord.TableEnptyRecord;
 public class Table {
 
 	private RequestManager rm;
+	private String database;
 	private EntityManager em;
 	private List<String> fieldNames = new ArrayList<String>();
 	private List<TableRecord> records = new ArrayList<TableRecord>();
 	private FieldGroups fieldGroups;
+	private String query;
 
 	private Map<String, TableRecord> indexMap;
+
+	public Table() {
+	}
 
 	public Table(RequestManager rm) {
 		this.rm = rm;
 	}
 
 	public Table database(String db) {
-		this.em = this.rm.getEntityManager(db);
+		this.database = db;
+		this.em = this.rm.getEntityManager(this.database);
 		return this;
+	}
+
+	public String getDatabase() {
+		return database;
 	}
 
 	public TableRecord loadFirst(String sql) {
@@ -60,6 +71,14 @@ public class Table {
 		return line;
 	}
 
+	public String getQuery() {
+		return this.query;
+	}
+
+	public void setQuery(String query) {
+		this.query = query;
+	}
+
 	public Table load(String sql) {
 		return this.load(() -> {
 			return sql;
@@ -76,6 +95,7 @@ public class Table {
 		this.records = new ArrayList<TableRecord>();
 
 		String sSql = sql.get();
+		this.query = sSql;
 
 		System.out.println("#load#################");
 		System.out.println(sSql);
@@ -122,8 +142,20 @@ public class Table {
 	}
 
 	public Table forEach(Consumer<TableRecord> executer) {
+		return this.eachRecord(executer);
+	}
+
+	public Table eachRecord(Consumer<TableRecord> executer) {
 		for (TableRecord line : this.records) {
 			executer.accept(line);
+		}
+		return this;
+	}
+
+	public Table eachRecordWithIndex(BiConsumer<TableRecord, Integer> executer) {
+		int index = 0;
+		for (TableRecord line : this.records) {
+			executer.accept(line, index++);
 		}
 		return this;
 	}

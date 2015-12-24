@@ -8,7 +8,7 @@ muddler.Page.start(rm) {
 					order by title
 					"""
 
- 	viewParam "list", pages
+ 	viewParam "pages", pages
 	
 	setView 'index.html'
 }
