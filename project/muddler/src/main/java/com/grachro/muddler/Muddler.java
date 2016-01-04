@@ -21,6 +21,10 @@ public class Muddler {
 	public static Map<String, EntityManagerFactory> entityManagerFactoryMap = new HashMap<String, EntityManagerFactory>();
 
 	public static void main(String... args) {
+		init(args);
+	}
+
+	public static void init(String... args) {
 
 		String workspace = System.getProperty("workspace");
 		if (StringUtils.isEmpty(workspace)) {
