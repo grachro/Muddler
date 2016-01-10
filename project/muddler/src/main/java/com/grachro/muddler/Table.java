@@ -325,4 +325,21 @@ public class Table {
 		somethig.accept(this);
 		return this;
 	}
+
+	public String toTsv() {
+		StringBuilder sb = new StringBuilder();
+		for (TableRecord record : this.records) {
+			boolean first = true;
+			for (String fieldName : this.fieldNames) {
+				if (first) {
+					first = false;
+				} else {
+					sb.append("\t");
+				}
+				sb.append(record.get(fieldName));
+			}
+			sb.append("\n");
+		}
+		return sb.toString();
+	}
 }
